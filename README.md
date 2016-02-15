@@ -24,3 +24,4 @@ To deploy the app, run the packaged Install-ElitePaddles.ps1, which does the fol
 * Multiple gamepads unsupported
 * Large number of dependencies in deployment script
 * Fiddling with deployment script may be required for some users as it was only lightly tested
+* Some keys cannot be mapped by the app because they select the buttons instead (e.g. Enter and gamepad "A")
