@@ -2,6 +2,12 @@
 
 This is a hacky workaround for mapping the Elite Controller paddles to keys. This should help when using tools like Auto Hotkey or simply avoiding the "quick save reach". To read about my experience creating the app, [visit my blog](http://shawnquereshi.com/2016/02/binding-the-elite-controller-paddles-to-the-keyboard/).
 
+### Prerequisites
+* Xbox Elite Controller
+* Xbox Accessories App
+* Microsoft Build Tools (or VS2015)
+* Windows 10 SDK for certificate creation tools (or VS2015)
+
 ### Deploying the Application
 
 To deploy the app, run the packaged Install-ElitePaddles.ps1, which does the following:
@@ -16,4 +22,5 @@ To deploy the app, run the packaged Install-ElitePaddles.ps1, which does the fol
 
 ### Known or Potential Issues
 * Multiple gamepads unsupported
-* Large number of dependencies in deployment script which will likely require fiddling for many users
+* Large number of dependencies in deployment script
+* Fiddling with deployment script may be required for some users as it was only lightly tested
