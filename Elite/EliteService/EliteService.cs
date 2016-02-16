@@ -3,6 +3,7 @@
 /// </author>
 namespace EliteService
 {
+    using System;
     using System.ServiceModel;
     using System.ServiceProcess;
 
@@ -22,7 +23,7 @@ namespace EliteService
                 serviceHost.Close();
             }
 
-            serviceHost = new ServiceHost(typeof(EliteService));
+            serviceHost = new ServiceHost(typeof(EliteServiceLibrary.EliteService));
             serviceHost.Open();
         }
 

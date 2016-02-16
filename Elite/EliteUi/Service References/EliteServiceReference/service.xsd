@@ -7,21 +7,11 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="SendKeyDownResponse">
-    <xs:complexType>
-      <xs:sequence />
-    </xs:complexType>
-  </xs:element>
   <xs:element name="SendKeyUp">
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" name="virtualKey" type="xs:unsignedShort" />
       </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="SendKeyUpResponse">
-    <xs:complexType>
-      <xs:sequence />
     </xs:complexType>
   </xs:element>
 </xs:schema>

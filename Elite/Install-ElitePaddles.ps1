@@ -15,7 +15,7 @@ Write-Warning @"
 Running this script will perform the following actions on your PC:
 1. Modify the dependencies of the project files to point to the directory of your XboxDevices app.
 2. Compile Elite.sln. It is expected that the projects were not modified from how they were packeged with the solution.
-3. Register the EliteService which will run in the background on the machine as an HTTP listener on port 8642 (http://localhost:8642/EliteService)
+3. Compile the ElitePaddlesServiceHost which must be run simultaneously with ElitePaddles and acts as an HTTP listener for SendInput commands (http://localhost:8642/EliteService)
 4. Register the above url for the active user. Existing registration will be removed as it is assumed to be stale state.
 5. Generate certificate to sign the appx package. The user will be prompted for passwords to create the certs, and then again to use them (4 prompts).
 6. Add the certificate to the root store and sign the appx package.
@@ -75,13 +75,6 @@ $xml.Save($eliteUiCsprojLocation)
 # Build the solution
 & $msbuildLocation $SlnPath /m:4 /t:Rebuild "/p:Configuration=Release;OutDir=.\Out\;Platform=x64;AppxPackageSigningEnabled=false"
 
-# This check should not fail since the exe was built above, but check the EliteService.exe is in its expected path
-$eliteServiceLocation = $slnDir + "\EliteService\Out\EliteService.exe"
-if(-not (Test-Path $eliteServiceLocation -PathType Leaf))
-{
-    throw "EliteService.exe not found in expected build location $eliteServiceLocation."
-}
-
 # Set up app package paths and make sure the installation script was generated
 $eliteLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_x64_Test\"
 $eliteAppxLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_x64_Test\EliteUi_1.0.0.0_x64.appx"
@@ -91,9 +84,7 @@ if(-not ((Test-Path $eliteAppxLocation -PathType Leaf) -and (Test-Path $eliteApp
     throw "EliteUi_1.0.0.0_x64.appx and Add-AppDevPackage.ps1 not in expected build location $eliteLocation."
 }
 
-# Unregister and Reregister the service, and set its URI reservation
-& $installUtilLocation /u $eliteServiceLocation
-& $installUtilLocation $eliteServiceLocation
+# Set listener URI Reservation
 netsh http add urlacl url=http://+:8642/EliteService user=$env:userdomain\$env:username
 
 $tempPath = [System.IO.Path]::GetTempPath()

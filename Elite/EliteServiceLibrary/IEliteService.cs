@@ -4,14 +4,17 @@
 namespace EliteServiceLibrary
 {
     using System.ServiceModel;
+    using System.ServiceModel.Web;
 
     [ServiceContract]
     public interface IEliteService
     {
-        [OperationContract]
+        [WebInvoke(UriTemplate = "SendKeyDown?virtualKey={virtualKey}", Method = "POST")]
+        [OperationContract(IsOneWay = true)]
         void SendKeyDown(ushort virtualKey);
 
-        [OperationContract]
+        [WebInvoke(UriTemplate = "SendKeyUp?virtualKey={virtualKey}", Method = "POST")]
+        [OperationContract(IsOneWay = true)]
         void SendKeyUp(ushort virtualKey);
     }
 }

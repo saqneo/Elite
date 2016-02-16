@@ -18,10 +18,10 @@ namespace EliteUi.EliteServiceReference {
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="EliteServiceReference.IEliteService")]
     public interface IEliteService {
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IEliteService/SendKeyDown", ReplyAction="http://tempuri.org/IEliteService/SendKeyDownResponse")]
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IEliteService/SendKeyDown")]
         System.Threading.Tasks.Task SendKeyDownAsync(ushort virtualKey);
         
-        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IEliteService/SendKeyUp", ReplyAction="http://tempuri.org/IEliteService/SendKeyUpResponse")]
+        [System.ServiceModel.OperationContractAttribute(IsOneWay=true, Action="http://tempuri.org/IEliteService/SendKeyUp")]
         System.Threading.Tasks.Task SendKeyUpAsync(ushort virtualKey);
     }
     
