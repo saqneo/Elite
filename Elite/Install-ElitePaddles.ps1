@@ -32,7 +32,7 @@ if (Get-AppxPackage -Name "ElitePaddles")
 
 if(-not ($package = Get-AppxPackage -Name Microsoft.XboxDevices))
 {
-    "Failed to find the Microsoft.XboxDevices appx package. Please install the Xbox Accessories app from the Windows Store."
+    throw "Failed to find the Microsoft.XboxDevices appx package. Please install the Xbox Accessories app from the Windows Store."
 }
 $xboxDevicesLocation = $package.InstallLocation
 
@@ -68,9 +68,12 @@ if(-not ((Test-Path $makeCertLocation -PathType Leaf) -and (Test-Path $pvk2pfxLo
 
 # Assume the csproj files exists and change their dependencies to point to the Xbox Accessories app directory
 $eliteUiCsprojLocation = $slnDir + "\EliteUi\EliteUi.csproj"
-$xml = [xml](Get-Content -Path $eliteUiCsprojLocation)
-$xml.Project.ItemGroup.Reference | ? { $_.HintPath -and $_.HintPath.Contains("XboxDevices") } | % { $file = $_.HintPath | Split-Path -Leaf; $_.HintPath = $xboxDevicesLocation + "\" + $file }
-$xml.Save($eliteUiCsprojLocation)
+if ($xboxDevicesLocation)
+{
+    $xml = [xml](Get-Content -Path $eliteUiCsprojLocation)
+    $xml.Project.ItemGroup.Reference | ? { $_.HintPath -and $_.HintPath.Contains("XboxDevices") } | % { $file = $_.HintPath | Split-Path -Leaf; $_.HintPath = $xboxDevicesLocation + "\" + $file }
+    $xml.Save($eliteUiCsprojLocation)
+}
 
 # Build the solution
 & $msbuildLocation $SlnPath /m:4 /t:Rebuild "/p:Configuration=Release;OutDir=.\Out\;Platform=x64;AppxPackageSigningEnabled=false"
