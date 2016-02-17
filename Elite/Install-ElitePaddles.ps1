@@ -44,7 +44,7 @@ if(-not ($SlnPath.EndsWith("Elite.sln") -and (Test-Path $SlnPath -PathType Leaf)
 $slnDir = $SlnPath | Resolve-Path | Split-Path
 
 # Verify that build dependency exists
-$msbuildLocation = "C:\Program Files (x86)\MSBuild\14.0\Bin\MSBuild.exe"
+$msbuildLocation = gci "C:\Program Files*\MSBuild\14.0\Bin\MSBuild.exe" | Select -First 1 | Resolve-Path | Convert-Path
 if(-not (Test-Path $msbuildLocation -PathType Leaf))
 {
     throw "Could not find MSBuild.exe in . Please make sure you have the Microsoft Build Tools installed (https://www.microsoft.com/en-us/download/details.aspx?id=48159)."
