@@ -16,10 +16,11 @@ This is a hacky workaround for mapping the Elite Controller paddles to keys. Thi
 4. Run Install-ElitePaddles.ps1 from the directory where it is packaged, alongside Elite.sln
 
 I suggest looking through Install-ElitePaddles.ps1 so you understand what it's doing. In summary, it will perform the following tasks:
+
 1. Modify the dependencies of the Elite.csproj file to point to the directory of the XboxDevices app
 2. Compile Elite.sln targeted to your current platform, which includes:
-..* The ElitePaddles app
-..* ElitePaddlesServiceHost which hosts a local service used by ElitePaddles to bypass the SendInput restrictions of UWP
+  * The ElitePaddles app
+  * ElitePaddlesServiceHost which hosts a local service used by ElitePaddles to bypass the SendInput restrictions of UWP
 3. ACL the URL http://+:8642/EliteService to the active user so ElitePaddlesServiceHost can listen on it
 4. Generate a certificate to sign the appx package. The user will be prompted for passwords to create the certs, and then again to use them
 6. Add the certificate to the root store and sign the appx package.
@@ -29,6 +30,7 @@ I suggest looking through Install-ElitePaddles.ps1 so you understand what it's d
 ### Running the Application
 
 After deploying the app, do the following:
+
 1. Start ElitePaddlesServiceHost.exe from the ElitePaddlesServiceHost\Out\ directory
 2. Start ElitePaddles app
 
