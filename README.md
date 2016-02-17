@@ -6,19 +6,25 @@ This is a hacky workaround for mapping the Elite Controller paddles to keys. Thi
 * Xbox Elite Controller
 * Xbox Accessories App
 * Microsoft Build Tools (or VS2015)
+* Nuget Command Line tool (or VS2015)
 * Windows 10 SDK for certificate creation tools (or VS2015)
 
-### Deploying the Application
+### Deployment Steps
+1. Download and extract the package
+2. Download the nuget command-line utility (https://docs.nuget.org/consume/installing-nuget)
+3. Run nuget restore, targetting Elite.sln (e.g. "nuget.exe restore Elite.sln")
+4. Run Install-ElitePaddles.ps1 from the directory where it is packaged, alongside Elite.sln
 
-To deploy the app, run the packaged Install-ElitePaddles.ps1, which does the following:
-
-1. Modify the dependencies of the project files to point to the directory of your XboxDevices app.
-2. Compile Elite.sln. It is expected that the projects were not modified from how they were packeged with the solution.
-3. Compile the ElitePaddlesServiceHost which is used to host a local service to bypass the SendInput restricts of UWP
-4. Register the above url for the active user. Existing registration will be removed as it is assumed to be stale state.
-5. Generate certificate to sign the appx package. The user will be prompted for passwords to create the certs, and then again to use them.
+I suggest looking through Install-ElitePaddles.ps1 so you understand what it's doing. In summary, it will perform the following tasks:
+1. Modify the dependencies of the Elite.csproj file to point to the directory of the XboxDevices app
+2. Compile Elite.sln targeted to your current platform, which includes:
+..* The ElitePaddles app
+..* ElitePaddlesServiceHost which hosts a local service used by ElitePaddles to bypass the SendInput restrictions of UWP
+3. ACL the URL http://+:8642/EliteService to the active user so ElitePaddlesServiceHost can listen on it
+4. Generate a certificate to sign the appx package. The user will be prompted for passwords to create the certs, and then again to use them
 6. Add the certificate to the root store and sign the appx package.
-7. Deploy the appx package.
+7. Deploy the ElitePaddles appx package.
+5. Enable loopback on the ElitePaddles app
 
 ### Running the Application
 
