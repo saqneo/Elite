@@ -131,4 +131,4 @@ Copy-item -Path $cerPath -Destination $eliteLocation -Force
 Invoke-Expression "& '$eliteAppxAddLocation'"
 
 $elitePackageFn = (Get-AppxPackage -Name ElitePaddles).PackageFamilyName
-checknetisolation loopbackexempt -d -n="$elitePackageFn"
+checknetisolation loopbackexempt -a -n="$elitePackageFn"
