@@ -30,6 +30,16 @@ if (Get-AppxPackage -Name "ElitePaddles")
     throw "ElitePaddles app already installed. Please remove it if you wish to proceed."
 }
 
+$systemType = (gwmi win32_computersystem).SystemType
+if($systemType.StartsWith("x64"))
+{
+	$procArch = "x64"
+}
+else
+{
+	$procArch = "x86"
+}
+
 if(-not ($package = Get-AppxPackage -Name Microsoft.XboxDevices))
 {
     throw "Failed to find the Microsoft.XboxDevices appx package. Please install the Xbox Accessories app from the Windows Store."
@@ -58,12 +68,12 @@ if(-not (Test-Path $installUtilLocation -PathType Leaf))
 }
 
 #Verify that the certificate creation and signing tools exists
-$makeCertLocation = "C:\Program Files (x86)\Windows Kits\10\bin\x86\makecert.exe"
-$pvk2pfxLocation = "C:\Program Files (x86)\Windows Kits\10\bin\x86\pvk2pfx.exe"
-$signtoolLocation = "C:\Program Files (x86)\Windows Kits\10\bin\x86\signtool.exe"
+$makeCertLocation = gci "C:\Program Files*\Windows Kits\10\bin\x86\makecert.exe" | Select -First 1 | Resolve-Path | Convert-Path
+$pvk2pfxLocation = gci "C:\Program Files*\Windows Kits\10\bin\x86\pvk2pfx.exe" | Select -First 1 | Resolve-Path | Convert-Path
+$signtoolLocation = gci "C:\Program Files*\Windows Kits\10\bin\x86\signtool.exe" | Select -First 1 | Resolve-Path | Convert-Path
 if(-not ((Test-Path $makeCertLocation -PathType Leaf) -and (Test-Path $pvk2pfxLocation -PathType Leaf) -and (Test-Path $signtoolLocation)))
 {
-    throw "Could not find makecert.exe, pvk2pfx.exe, or signtool.exe in C:\Program Files (x86)\Windows Kits\10\bin\x86\. Please make sure you have the Windows 10 SDK installed (https://dev.windows.com/en-us/downloads/windows-10-sdk)."
+    throw "Could not find makecert.exe, pvk2pfx.exe, or signtool.exe in C:\Program Files*\Windows Kits\10\bin\x86\. Please make sure you have the Windows 10 SDK installed (https://dev.windows.com/en-us/downloads/windows-10-sdk)."
 }
 
 # Assume the csproj files exists and change their dependencies to point to the Xbox Accessories app directory
@@ -76,12 +86,12 @@ if ($xboxDevicesLocation)
 }
 
 # Build the solution
-& $msbuildLocation $SlnPath /m:4 /t:Rebuild "/p:Configuration=Release;OutDir=.\Out\;Platform=x64;AppxPackageSigningEnabled=false"
+& $msbuildLocation $SlnPath /m:4 /t:Rebuild "/p:Configuration=Release;OutDir=.\Out\;Platform=${procArch};AppxPackageSigningEnabled=false"
 
 # Set up app package paths and make sure the installation script was generated
-$eliteLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_x64_Test\"
-$eliteAppxLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_x64_Test\EliteUi_1.0.0.0_x64.appx"
-$eliteAppxAddLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_x64_Test\Add-AppDevPackage.ps1"
+$eliteLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_${procArch}_Test\"
+$eliteAppxLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_${procArch}_Test\EliteUi_1.0.0.0_${procArch}.appx"
+$eliteAppxAddLocation = $slnDir + "\EliteUi\Out\EliteUi\AppPackages\EliteUi_1.0.0.0_${procArch}_Test\Add-AppDevPackage.ps1"
 if(-not ((Test-Path $eliteAppxLocation -PathType Leaf) -and (Test-Path $eliteAppxAddLocation -PathType Leaf)))
 {
     throw "EliteUi_1.0.0.0_x64.appx and Add-AppDevPackage.ps1 not in expected build location $eliteLocation."
@@ -119,3 +129,6 @@ Copy-item -Path $cerPath -Destination $eliteLocation -Force
 
 # Install the package
 Invoke-Expression "& '$eliteAppxAddLocation'"
+
+$elitePackageFn = (Get-AppxPackage -Name ElitePaddles).PackageFamilyName
+checknetisolation loopbackexempt -d -n="$elitePackageFn"
