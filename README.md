@@ -2,6 +2,8 @@
 
 This is a hacky workaround for mapping the Elite Controller paddles to keys. This should help when using tools like Auto Hotkey or simply avoiding the "quick save reach". To read about my experience creating the app, [visit my blog](http://shawnquereshi.com/2016/02/binding-the-elite-controller-paddles-to-the-keyboard/).
 
+A helpful redditor put together [a more friendly set of instructions](https://www.reddit.com/r/xboxone/comments/468wv0/workaround_for_mapping_xbox_elite_controller/d45htf6) that I would recommend trying if these don't work. Thanks u/saviorbk!
+
 ### Prerequisites
 * Xbox Elite Controller
 * Xbox Accessories App
