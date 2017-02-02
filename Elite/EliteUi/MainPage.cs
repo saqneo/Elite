@@ -107,8 +107,22 @@ namespace EliteUi
         private void Initialize()
         {
             this.InitializeWindow();
+            this.InitializeButtons();
             this.InitializeTimer();
             this.InitializeEvents();
+        }
+
+        private void InitializeButtons()
+        {
+            var initializeButtons = new[]{ GamepadButtons.Aux1, GamepadButtons.Aux2, GamepadButtons.Aux3, GamepadButtons.Aux4 };
+            foreach(var button in initializeButtons)
+            {
+                VirtualKey key;
+                if (SettingsManager.Instance.TryLoadButtonAssignment(button, out key))
+                {
+                    AssignButton(button, key);
+                }
+            }
         }
 
         /// <summary>
@@ -164,6 +178,12 @@ namespace EliteUi
             {
                 if ((this.gamepad == null && !EliteGamepadAdapter.TryCreate(out this.gamepad)) || !this.gamepad.IsReady)
                 {
+                    // Workaround for callback not working when controller is added.
+                    if(!this.gamepad.IsReady)
+                    {
+                        this.gamepad = null;
+                    }
+
                     return;
                 }
 
@@ -411,8 +431,7 @@ namespace EliteUi
             {
                 if (this.assigning)
                 {
-                    this.assignedButtons[this.assignedGamepadButton] = key;
-                    this.assignedButton.Content = key.ToString();
+                    AssignButton(this.assignedGamepadButton, key);
 
                     // Workaround that certain characters get captured twice 
                     this.deferringClear = !reset;
@@ -423,6 +442,54 @@ namespace EliteUi
                     }
                 }
             }
+        }
+
+        private void UnassignButton(GamepadButtons button)
+        {
+            switch (button)
+            {
+                case GamepadButtons.Aux1:
+                    aux1_button.Content = "Unassigned";
+                    break;
+                case GamepadButtons.Aux2:
+                    aux2_button.Content = "Unassigned";
+                    break;
+                case GamepadButtons.Aux3:
+                    aux3_button.Content = "Unassigned";
+                    break;
+                case GamepadButtons.Aux4:
+                    aux4_button.Content = "Unassigned";
+                    break;
+                default:
+                    return;
+            }
+
+            this.assignedButtons.Remove(button);
+            SettingsManager.Instance.RemoveButtonAssignment(button);
+        }
+
+        private void AssignButton(GamepadButtons button, VirtualKey key)
+        {
+            switch(button)
+            {
+                case GamepadButtons.Aux1:
+                    aux1_button.Content = key.ToString();
+                    break;
+                case GamepadButtons.Aux2:
+                    aux2_button.Content = key.ToString();
+                    break;
+                case GamepadButtons.Aux3:
+                    aux3_button.Content = key.ToString();
+                    break;
+                case GamepadButtons.Aux4:
+                    aux4_button.Content = key.ToString();
+                    break;
+                default:
+                    return;
+            }
+
+            this.assignedButtons[button] = key;
+            SettingsManager.Instance.SaveButtonAssignment(this.assignedGamepadButton, key);
         }
 
         /// <summary>
@@ -441,8 +508,7 @@ namespace EliteUi
             {
                 if (!this.deferringClear)
                 {
-                    this.assignedButtons.Remove(gamepadButton);
-                    this.assignedButton.Content = "Unassigned";
+                    UnassignButton(gamepadButton);
                 }
 
                 this.ClearAssignmentVariables();
