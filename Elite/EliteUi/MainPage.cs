@@ -9,7 +9,6 @@ namespace EliteUi
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using EliteServiceReference;
     using GamepadManagement;
     using Windows.Foundation;
     using Windows.System;
@@ -20,6 +19,8 @@ namespace EliteUi
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
     using Windows.UI.Xaml.Media;
+    using Windows.Gaming;
+    using System.Reflection;
 
     /// <summary>
     /// The non-generated part of the main application.
@@ -48,11 +49,6 @@ namespace EliteUi
         /// The timer
         /// </summary>
         private Timer timer;
-
-        /// <summary>
-        /// The service client
-        /// </summary>
-        private EliteServiceClient service = null;
 
         /// <summary>
         /// The last timestamp of the gamepad
@@ -151,21 +147,6 @@ namespace EliteUi
 
         #endregion
 
-        #region Connections
-
-        /// <summary>
-        /// Ensures the service is initialized
-        /// </summary>
-        private void EnsureServiceInitialized()
-        {
-            if (this.service == null)
-            {
-                this.service = new EliteServiceClient(EliteServiceClient.EndpointConfiguration.NetHttpBinding_IEliteService, EliteServiceUri);
-            }
-        }
-
-        #endregion
-
         #region Background controller polling
 
         /// <summary>
@@ -178,14 +159,14 @@ namespace EliteUi
             {
                 return;
             }
-            
+
             try
             {
                 if ((this.gamepad == null && !EliteGamepadAdapter.TryCreate(out this.gamepad)) || !this.gamepad.IsReady)
                 {
                     return;
                 }
-                
+
                 var reading = this.gamepad.GetCurrentUnmappedReading();
                 if (this.ShouldSkipGamepadProcessing(reading))
                 {
@@ -275,7 +256,7 @@ namespace EliteUi
                 if (this.assignedButtons.TryGetValue(value, out key) && !this.buttonsDown.Contains(value))
                 {
                     this.buttonsDown.Add(value);
-                    this.SendKeyDown(key);
+                    InjectionEngine.Instance.SendKeyDown(key);
                 }
 
                 switch (reading.Buttons & value)
@@ -305,7 +286,7 @@ namespace EliteUi
                     if (this.assignedButtons.TryGetValue(value, out key))
                     {
                         this.buttonsDown.Add(value);
-                        this.SendKeyUp(key);
+                        InjectionEngine.Instance.SendKeyUp(key);
                     }
 
                     this.buttonsDown.Remove(value);
@@ -337,26 +318,6 @@ namespace EliteUi
 
             // Wait for UI to update
             Task.WaitAll(tasks.ToArray<Task>());
-        }
-
-        /// <summary>
-        /// Sends a key down signal.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        private void SendKeyDown(VirtualKey key)
-        {
-            this.EnsureServiceInitialized();
-            this.service.SendKeyDownAsync((ushort)key);
-        }
-
-        /// <summary>
-        /// Sends a key up signal.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        private void SendKeyUp(VirtualKey key)
-        {
-            this.EnsureServiceInitialized();
-            this.service.SendKeyUpAsync((ushort)key);
         }
 
         #endregion

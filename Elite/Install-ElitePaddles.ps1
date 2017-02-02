@@ -16,10 +16,9 @@ Running this script will perform the following actions on your PC:
 1. Modify the dependencies of the project files to point to the directory of your XboxDevices app.
 2. Compile Elite.sln. It is expected that the projects were not modified from how they were packeged with the solution.
 3. Compile the ElitePaddlesServiceHost which must be run simultaneously with ElitePaddles and acts as an HTTP listener for SendInput commands (http://localhost:8642/EliteService)
-4. Register the above url for the active user. Existing registration will be removed as it is assumed to be stale state.
-5. Generate certificate to sign the appx package. The user will be prompted for passwords to create the certs, and then again to use them (4 prompts).
-6. Add the certificate to the root store and sign the appx package.
-7. Deploy the appx package.
+4. Generate certificate to sign the appx package. The user will be prompted for passwords to create the certs, and then again to use them (4 prompts).
+5. Add the certificate to the root store and sign the appx package.
+6. Deploy the appx package.
 "@
 
 Write-Host "Press any key to continue ..."
@@ -51,13 +50,13 @@ if(-not ($SlnPath.EndsWith("Elite.sln") -and (Test-Path $SlnPath -PathType Leaf)
 {
     throw "Parameter SlnPath does not resolve to 'Elite.sln'.";
 }
-$slnDir = $SlnPath | Resolve-Path | Split-Path
+$slnDir = $SlnPath | Resolve-Path | Split-Path | Convert-Path
 
 # Verify that build dependency exists
 $msbuildLocation = gci "C:\Program Files*\MSBuild\14.0\Bin\MSBuild.exe" | Select -First 1 | Resolve-Path | Convert-Path
 if(-not (Test-Path $msbuildLocation -PathType Leaf))
 {
-    throw "Could not find MSBuild.exe in . Please make sure you have the Microsoft Build Tools installed (https://www.microsoft.com/en-us/download/details.aspx?id=48159)."
+    throw "Could not find MSBuild.exe in $msbuildLocation. Please make sure you have the Microsoft Build Tools installed (https://www.microsoft.com/en-us/download/details.aspx?id=48159)."
 }
 
 # Verify that installutil exists to install the service
@@ -68,12 +67,10 @@ if(-not (Test-Path $installUtilLocation -PathType Leaf))
 }
 
 #Verify that the certificate creation and signing tools exists
-$makeCertLocation = gci "C:\Program Files*\Windows Kits\10\bin\x86\makecert.exe" | Select -First 1 | Resolve-Path | Convert-Path
-$pvk2pfxLocation = gci "C:\Program Files*\Windows Kits\10\bin\x86\pvk2pfx.exe" | Select -First 1 | Resolve-Path | Convert-Path
 $signtoolLocation = gci "C:\Program Files*\Windows Kits\10\bin\x86\signtool.exe" | Select -First 1 | Resolve-Path | Convert-Path
-if(-not ((Test-Path $makeCertLocation -PathType Leaf) -and (Test-Path $pvk2pfxLocation -PathType Leaf) -and (Test-Path $signtoolLocation)))
+if(-not ((Test-Path $makeCertLocation -PathType Leaf)))
 {
-    throw "Could not find makecert.exe, pvk2pfx.exe, or signtool.exe in C:\Program Files*\Windows Kits\10\bin\x86\. Please make sure you have the Windows 10 SDK installed (https://dev.windows.com/en-us/downloads/windows-10-sdk)."
+    throw "Could not find signtool.exe in C:\Program Files*\Windows Kits\10\bin\x86\. Please make sure you have the Windows 10 SDK installed (https://dev.windows.com/en-us/downloads/windows-10-sdk)."
 }
 
 # Assume the csproj files exists and change their dependencies to point to the Xbox Accessories app directory
@@ -97,10 +94,7 @@ if(-not ((Test-Path $eliteAppxLocation -PathType Leaf) -and (Test-Path $eliteApp
     throw "EliteUi_1.0.0.0_x64.appx and Add-AppDevPackage.ps1 not in expected build location $eliteLocation."
 }
 
-# Set listener URI Reservation
-netsh http add urlacl url=http://+:8642/EliteService user=$env:userdomain\$env:username
-
-$tempPath = [System.IO.Path]::GetTempPath()
+<#$tempPath = [System.IO.Path]::GetTempPath()
 $tempDir = $tempPath + [Guid]::NewGuid()
 md $tempDir
 push-location
@@ -118,17 +112,67 @@ finally
 {
     Pop-Location
 }
+#Erase old versions of the cert
+gci cert:\localmachine\root | ? { $_.Subject -eq "CN=ElitePaddlesPublisher" } | Remove-Item
 
 # Copy certs to root store and application directory
 Import-PfxCertificate -CertStoreLocation Cert:\LocalMachine\Root -FilePath $pfxPath -Password (ConvertTo-SecureString "ElitePaddles_TestKeyPw" -AsPlainText -Force)
 Copy-item -path $pfxPath -Destination .
-Copy-item -Path $cerPath -Destination $eliteLocation -Force
+Copy-item -Path $cerPath -Destination $eliteLocation -Force#>
+
+$fp = "ElitePaddlesAppCert.pfx"
+
+powershell.exe -sta -command {
+$subject = "CN=ElitePaddlesPublisher"
+$pw = (ConvertTo-SecureString "Temp123" -AsPlainText -Force)
+$fp = "ElitePaddlesAppCert.pfx"
+gci cert:\currentuser\my | ? { $_.Subject -eq $subject } | Remove-Item
+gci cert:\localmachine\root | ? { $_.Subject -eq $subject } | Remove-Item
+
+$subjectEnc = New-Object -ComObject X509Enrollment.CX500DistinguishedName
+$subjectEnc.Encode($subject, 0)
+$ids = New-Object -ComObject X509Enrollment.CObjectIDs
+"1.3.6.1.5.5.7.3.3","1.3.6.1.4.1.311.10.3.13" | % { $id = New-Object -ComObject X509Enrollment.CObjectID; $id.InitializeFromValue(([Security.Cryptography.Oid]$_).Value); $ids.Add($id) }
+
+$eku = New-Object -ComObject X509Enrollment.CX509ExtensionEnhancedKeyUsage
+$eku.InitializeEncode($ids)
+
+$algId = New-Object -ComObject X509Enrollment.CObjectId
+$algId.InitializeFromValue(([Security.Cryptography.Oid]"RSA").Value)
+$pk = New-Object -ComObject X509Enrollment.CX509PrivateKey
+$pk.ProviderName = "Microsoft Enhanced Cryptographic Provider v1.0"
+$pk.KeySpec = 2 #or 1 for Exchange
+$pk.Length = 2048
+$pk.MachineContext = $false #false for CU, true for LM
+$pk.ExportPolicy = 1; #exportable
+$pk.Algorithm = $algId
+$pk.Create()
+$cert = New-Object -ComObject X509Enrollment.CX509CertificateRequestCertificate
+$cert.InitializeFromPrivateKey(1,$pk,"")
+$cert.Subject = $subjectEnc
+$cert.Issuer = $subjectEnc
+$cert.NotBefore = [DateTime]::Now
+$cert.NotAfter = [DateTime]::Now.AddYears(5)
+$cert.X509Extensions.Add($eku)
+$sigAlg = New-Object -ComObject X509Enrollment.CObjectId
+$sigAlg.InitializeFromValue(([Security.Cryptography.Oid]"SHA256").Value)
+$cert.SignatureInformation.HashAlgorithm = $sigAlg
+$cert.Encode()
+$certReq = New-Object -ComObject X509Enrollment.CX509enrollment
+$certReq.InitializeFromRequest($cert)
+$certReq.CertificateFriendlyName = ""
+$end = $certReq.CreateRequest(1)
+$certReq.InstallResponse(2,$end,1,"")
+$data = $certReq.CreatePFX([Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pw)),0,1)
+Set-Content -Path $fp -Value ([Convert]::FromBase64String($data)) -Encoding Byte
+[Byte[]]$bytes = [Convert]::FromBase64String($end)
+New-Object Security.Cryptography.X509Certificates.X509Certificate2 @(,$bytes)
+
+Import-PfxCertificate -Password (ConvertTo-SecureString "Temp123" -Force -AsPlainText) -FilePath $fp -CertStoreLocation cert:\Localmachine\root
+}
 
 # Sign the package
-& $signtoolLocation sign /fd SHA256 /a /f $pfxPath /p "ElitePaddles_TestKeyPw" $eliteAppxLocation
+& $signtoolLocation sign /debug /fd SHA256 /a /f $fp /p "Temp123" $eliteAppxLocation
 
 # Install the package
 Invoke-Expression "& '$eliteAppxAddLocation'"
-
-$elitePackageFn = (Get-AppxPackage -Name ElitePaddles).PackageFamilyName
-checknetisolation loopbackexempt -a -n="$elitePackageFn"

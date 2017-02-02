@@ -6,6 +6,7 @@ namespace EliteUi
     using System;
     using System.Linq;
     using GamepadManagement;
+    using Windows.Foundation;
 
     /// <summary>
     /// Adapter with auto-reconnect for the EliteGamepad
@@ -89,6 +90,7 @@ namespace EliteUi
                 return false;
             }
 
+            var config = underlying.GetConfiguration(underlying.CurrentSlotId);
             gamepad = new EliteGamepadAdapter(underlying);
             return true;
         }

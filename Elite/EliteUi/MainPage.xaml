@@ -97,12 +97,12 @@
                 <ColumnDefinition MinWidth="120" />
                 <ColumnDefinition Width="30" />
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Paddle" Grid.Column="1" Grid.Row="1" FontFamily="Segoe UI" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            <TextBlock Text="Assignment" Grid.Column="2" Grid.Row="1" FontFamily="Segoe UI" Foreground="White" HorizontalAlignment="Center" FontWeight="Bold" VerticalAlignment="Center" />
-            <Button x:Name="aux1_button" Content="Unassigned" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#FFFFFF" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux1_button_Click" />
-            <Button x:Name="aux2_button" Content="Unassigned" Grid.Column="2" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#FFFFFF" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux2_button_Click" />
-            <Button x:Name="aux3_button" Content="Unassigned" Grid.Column="2" Grid.Row="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#FFFFFF" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux3_button_Click" />
-            <Button x:Name="aux4_button" Content="Unassigned" Grid.Column="2" Grid.Row="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#FFFFFF" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux4_button_Click" />
+            <TextBlock Text="Paddle" Grid.Column="1" Grid.Row="1" FontFamily="Segoe UI" Foreground="#f1f1f1" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Text="Assignment" Grid.Column="2" Grid.Row="1" FontFamily="Segoe UI" Foreground="#f1f1f1" HorizontalAlignment="Center" FontWeight="Bold" VerticalAlignment="Center" />
+            <Button x:Name="aux1_button" Content="Unassigned" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#f1f1f1" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux1_button_Click" />
+            <Button x:Name="aux2_button" Content="Unassigned" Grid.Column="2" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#f1f1f1" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux2_button_Click" />
+            <Button x:Name="aux3_button" Content="Unassigned" Grid.Column="2" Grid.Row="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#f1f1f1" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux3_button_Click" />
+            <Button x:Name="aux4_button" Content="Unassigned" Grid.Column="2" Grid.Row="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Foreground="#f1f1f1" BorderBrush="#3A3A3A" FontFamily="Segoe UI" BorderThickness="2" Margin="2,2,2,2" Click="aux4_button_Click" />
             <Border x:Name="aux1_identifier" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="#3A3A3A" BorderThickness="2" Margin="2,2,2,2" >
                 <TextBlock Text="Top Left" FontFamily="Segoe UI" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
