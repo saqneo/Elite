@@ -33,8 +33,7 @@
     </Application>
   </Applications>
   <Capabilities>
-    <Capability Name="internetClient" />
-    <Capability Name="privateNetworkClientServer" />
     <rescap:Capability Name="xboxAccessoryManagement" />
+    <rescap:Capability Name="inputInjectionBrokered" />
   </Capabilities>
 </Package>

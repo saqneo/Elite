@@ -234,3 +234,8 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+/Elite/EliteUi/Assets
+/Elite/ElitePaddlesServiceHost/Out
+/Elite/EliteService/Out
+/Elite/EliteServiceLibrary/Out
+/Elite/-

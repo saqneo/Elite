@@ -9,7 +9,6 @@ namespace EliteUi
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using EliteServiceReference;
     using GamepadManagement;
     using Windows.Foundation;
     using Windows.System;
@@ -20,6 +19,8 @@ namespace EliteUi
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
     using Windows.UI.Xaml.Media;
+    using Windows.Gaming;
+    using System.Reflection;
 
     /// <summary>
     /// The non-generated part of the main application.
@@ -48,11 +49,6 @@ namespace EliteUi
         /// The timer
         /// </summary>
         private Timer timer;
-
-        /// <summary>
-        /// The service client
-        /// </summary>
-        private EliteServiceClient service = null;
 
         /// <summary>
         /// The last timestamp of the gamepad
@@ -111,8 +107,22 @@ namespace EliteUi
         private void Initialize()
         {
             this.InitializeWindow();
+            this.InitializeButtons();
             this.InitializeTimer();
             this.InitializeEvents();
+        }
+
+        private void InitializeButtons()
+        {
+            var initializeButtons = new[]{ GamepadButtons.Aux1, GamepadButtons.Aux2, GamepadButtons.Aux3, GamepadButtons.Aux4 };
+            foreach(var button in initializeButtons)
+            {
+                VirtualKey key;
+                if (SettingsManager.Instance.TryLoadButtonAssignment(button, out key))
+                {
+                    AssignButton(button, key);
+                }
+            }
         }
 
         /// <summary>
@@ -151,21 +161,6 @@ namespace EliteUi
 
         #endregion
 
-        #region Connections
-
-        /// <summary>
-        /// Ensures the service is initialized
-        /// </summary>
-        private void EnsureServiceInitialized()
-        {
-            if (this.service == null)
-            {
-                this.service = new EliteServiceClient(EliteServiceClient.EndpointConfiguration.NetHttpBinding_IEliteService, EliteServiceUri);
-            }
-        }
-
-        #endregion
-
         #region Background controller polling
 
         /// <summary>
@@ -178,14 +173,20 @@ namespace EliteUi
             {
                 return;
             }
-            
+
             try
             {
                 if ((this.gamepad == null && !EliteGamepadAdapter.TryCreate(out this.gamepad)) || !this.gamepad.IsReady)
                 {
+                    // Workaround for callback not working when controller is added.
+                    if(!this.gamepad.IsReady)
+                    {
+                        this.gamepad = null;
+                    }
+
                     return;
                 }
-                
+
                 var reading = this.gamepad.GetCurrentUnmappedReading();
                 if (this.ShouldSkipGamepadProcessing(reading))
                 {
@@ -275,7 +276,7 @@ namespace EliteUi
                 if (this.assignedButtons.TryGetValue(value, out key) && !this.buttonsDown.Contains(value))
                 {
                     this.buttonsDown.Add(value);
-                    this.SendKeyDown(key);
+                    InjectionEngine.Instance.SendKeyDown(key);
                 }
 
                 switch (reading.Buttons & value)
@@ -305,7 +306,7 @@ namespace EliteUi
                     if (this.assignedButtons.TryGetValue(value, out key))
                     {
                         this.buttonsDown.Add(value);
-                        this.SendKeyUp(key);
+                        InjectionEngine.Instance.SendKeyUp(key);
                     }
 
                     this.buttonsDown.Remove(value);
@@ -337,26 +338,6 @@ namespace EliteUi
 
             // Wait for UI to update
             Task.WaitAll(tasks.ToArray<Task>());
-        }
-
-        /// <summary>
-        /// Sends a key down signal.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        private void SendKeyDown(VirtualKey key)
-        {
-            this.EnsureServiceInitialized();
-            this.service.SendKeyDownAsync((ushort)key);
-        }
-
-        /// <summary>
-        /// Sends a key up signal.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        private void SendKeyUp(VirtualKey key)
-        {
-            this.EnsureServiceInitialized();
-            this.service.SendKeyUpAsync((ushort)key);
         }
 
         #endregion
@@ -450,8 +431,7 @@ namespace EliteUi
             {
                 if (this.assigning)
                 {
-                    this.assignedButtons[this.assignedGamepadButton] = key;
-                    this.assignedButton.Content = key.ToString();
+                    AssignButton(this.assignedGamepadButton, key);
 
                     // Workaround that certain characters get captured twice 
                     this.deferringClear = !reset;
@@ -462,6 +442,54 @@ namespace EliteUi
                     }
                 }
             }
+        }
+
+        private void UnassignButton(GamepadButtons button)
+        {
+            switch (button)
+            {
+                case GamepadButtons.Aux1:
+                    aux1_button.Content = "Unassigned";
+                    break;
+                case GamepadButtons.Aux2:
+                    aux2_button.Content = "Unassigned";
+                    break;
+                case GamepadButtons.Aux3:
+                    aux3_button.Content = "Unassigned";
+                    break;
+                case GamepadButtons.Aux4:
+                    aux4_button.Content = "Unassigned";
+                    break;
+                default:
+                    return;
+            }
+
+            this.assignedButtons.Remove(button);
+            SettingsManager.Instance.RemoveButtonAssignment(button);
+        }
+
+        private void AssignButton(GamepadButtons button, VirtualKey key)
+        {
+            switch(button)
+            {
+                case GamepadButtons.Aux1:
+                    aux1_button.Content = key.ToString();
+                    break;
+                case GamepadButtons.Aux2:
+                    aux2_button.Content = key.ToString();
+                    break;
+                case GamepadButtons.Aux3:
+                    aux3_button.Content = key.ToString();
+                    break;
+                case GamepadButtons.Aux4:
+                    aux4_button.Content = key.ToString();
+                    break;
+                default:
+                    return;
+            }
+
+            this.assignedButtons[button] = key;
+            SettingsManager.Instance.SaveButtonAssignment(this.assignedGamepadButton, key);
         }
 
         /// <summary>
@@ -480,8 +508,7 @@ namespace EliteUi
             {
                 if (!this.deferringClear)
                 {
-                    this.assignedButtons.Remove(gamepadButton);
-                    this.assignedButton.Content = "Unassigned";
+                    UnassignButton(gamepadButton);
                 }
 
                 this.ClearAssignmentVariables();

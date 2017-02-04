@@ -11,12 +11,12 @@
     <AssemblyName>EliteUi</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateThumbprint>4B6033C5A14465421305F6FF053A67F0EEFA83D9</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>D5C0FFA0487D52EBBD5496E8030A063253FDD279</PackageCertificateThumbprint>
     <PackageCertificateKeyFile>EliteUi_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -68,7 +68,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP;CODE_ANALYSIS</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -93,13 +93,6 @@
     <None Include="EliteUi_TemporaryKey.pfx" />
     <None Include="project.json" />
     <None Include="Properties\ServiceReferences.Designer.ClientConfig" />
-    <None Include="Service References\EliteServiceReference\service.wsdl" />
-    <None Include="Service References\EliteServiceReference\service.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\EliteServiceReference\service1.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.xaml.cs">
@@ -111,11 +104,8 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Service References\EliteServiceReference\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
+    <Compile Include="InjectionEngine.cs" />
+    <Compile Include="SettingsManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -131,12 +121,6 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <None Include="Service References\EliteServiceReference\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Service References\EliteServiceReference\configuration.svcinfo" />
-    <None Include="Service References\EliteServiceReference\configuration91.svcinfo" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -150,30 +134,24 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DevicesApp.PlatformAbstraction">
-      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1512.2007.0_x64__8wekyb3d8bbwe\DevicesApp.PlatformAbstraction.winmd</HintPath>
+      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1611.3004.0_x64__8wekyb3d8bbwe\DevicesApp.PlatformAbstraction.winmd</HintPath>
       <Implementation>PlatformAbstraction.dll</Implementation>
     </Reference>
     <Reference Include="GamepadManagement, Version=255.255.255.255, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1512.2007.0_x64__8wekyb3d8bbwe\GamepadManagement.winmd</HintPath>
+      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1611.3004.0_x64__8wekyb3d8bbwe\GamepadManagement.winmd</HintPath>
       <Implementation>GamepadManagement.dll</Implementation>
     </Reference>
     <Reference Include="GamepadManagement.Extensibility, Version=255.255.255.255, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1512.2007.0_x64__8wekyb3d8bbwe\GamepadManagement.Extensibility.winmd</HintPath>
+      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1611.3004.0_x64__8wekyb3d8bbwe\GamepadManagement.Extensibility.winmd</HintPath>
       <Implementation>GamepadManagement.dll</Implementation>
     </Reference>
     <Reference Include="GamepadManagement.Internal, Version=255.255.255.255, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1512.2007.0_x64__8wekyb3d8bbwe\GamepadManagement.Internal.winmd</HintPath>
+      <HintPath>C:\Program Files\WindowsApps\Microsoft.XboxDevices_100.1611.3004.0_x64__8wekyb3d8bbwe\GamepadManagement.Internal.winmd</HintPath>
       <Implementation>GamepadManagement.dll</Implementation>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\EliteServiceReference\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

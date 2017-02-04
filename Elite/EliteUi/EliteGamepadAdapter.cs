@@ -6,11 +6,13 @@ namespace EliteUi
     using System;
     using System.Linq;
     using GamepadManagement;
+    using Windows.Foundation;
 
     /// <summary>
     /// Adapter with auto-reconnect for the EliteGamepad
     /// </summary>
     public class EliteGamepadAdapter
+        : IDisposable
     {
         /// <summary>
         /// The lock for using the gamepad
@@ -28,6 +30,14 @@ namespace EliteUi
         private EliteGamepad gamepad;
 
         /// <summary>
+        /// True if the object has been disposed
+        /// </summary>
+        private bool disposed = false;
+
+        EventHandler<EliteGamepad> addedHandler = null;
+        EventHandler<EliteGamepad> removedHandler = null;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EliteGamepadAdapter"/> class.
         /// </summary>
         /// <param name="gamepad">The gamepad.</param>
@@ -38,15 +48,18 @@ namespace EliteUi
             this.IsReady = true;
 
             // Should make this disposable so they get removed, but it should never be a problem unless somebody is being naughty or ambitious :)
-            EliteGamepad.EliteGamepadAdded += (sender, data) =>
+            this.addedHandler = (sender, data) =>
             {
                 this.EnsureGamepadInitialized(data);
             };
 
-            EliteGamepad.EliteGamepadRemoved += (sender, data) =>
+            this.removedHandler = (sender, data) =>
             {
                 this.RemoveGamepad(data);
             };
+
+            EliteGamepad.EliteGamepadAdded += this.addedHandler;
+            EliteGamepad.EliteGamepadRemoved += this.removedHandler;
         }
 
         /// <summary>
@@ -89,6 +102,7 @@ namespace EliteUi
                 return false;
             }
 
+            var config = underlying.GetConfiguration(underlying.CurrentSlotId);
             gamepad = new EliteGamepadAdapter(underlying);
             return true;
         }
@@ -134,7 +148,7 @@ namespace EliteUi
         /// <param name="data">The data.</param>
         private void RemoveGamepad(EliteGamepad data)
         {
-            if (this.gamepadId == data.FriendlyName)
+            if (this.gamepad == data)
             {
                 this.IsReady = false;
             }
@@ -151,6 +165,15 @@ namespace EliteUi
                 EliteGamepad.CheckForDriverLoaded();
                 this.gamepad = gamepad;
                 this.IsReady = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            if(!disposed)
+            {
+                EliteGamepad.EliteGamepadAdded -= this.addedHandler;
+                EliteGamepad.EliteGamepadRemoved -= this.removedHandler;
             }
         }
     }
