@@ -68,10 +68,6 @@ if(-not (Test-Path $installUtilLocation -PathType Leaf))
 
 #Verify that the certificate creation and signing tools exists
 $signtoolLocation = gci "C:\Program Files*\Windows Kits\10\bin\x86\signtool.exe" | Select -First 1 | Resolve-Path | Convert-Path
-if(-not ((Test-Path $makeCertLocation -PathType Leaf)))
-{
-    throw "Could not find signtool.exe in C:\Program Files*\Windows Kits\10\bin\x86\. Please make sure you have the Windows 10 SDK installed (https://dev.windows.com/en-us/downloads/windows-10-sdk)."
-}
 
 # Assume the csproj files exists and change their dependencies to point to the Xbox Accessories app directory
 $eliteUiCsprojLocation = $slnDir + "\EliteUi\EliteUi.csproj"
